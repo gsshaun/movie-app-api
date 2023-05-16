@@ -1,10 +1,5 @@
-import {
-  Controller,
-  Post,
-  Body,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -17,24 +12,10 @@ export class UsersController {
     return await this.usersService.signup(createUserDto);
   }
 
+  @UseGuards(AuthGuard('local'))
   @Post('signin')
-  async signIn(@Body() createUserDto: CreateUserDto) {
-    const { email, password } = createUserDto;
-    const user = await this.usersService.findByEmail(email);
-
-    if (!user) {
-      throw new NotFoundException('Invalid credentials');
-    }
-
-    const isPasswordValid = await this.usersService.comparePasswords(
-      password,
-      user.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
+  async signIn() {
+    // Authentication is handled by the LocalStrategy
     return 'Sign in successful';
   }
 }
