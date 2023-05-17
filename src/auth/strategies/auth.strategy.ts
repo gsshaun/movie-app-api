@@ -17,7 +17,11 @@ export class AuthStrategy extends PassportStrategy(Strategy) {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid email');
+    }
+
+    if(!user.isEmailVerified) {
+      throw new UnauthorizedException('Email not verified');
     }
 
     const isPasswordValid = await this.usersService.comparePasswords(
@@ -26,7 +30,7 @@ export class AuthStrategy extends PassportStrategy(Strategy) {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid password');
     }
 
     const token = this.jwtService.sign({ email: user.email });
