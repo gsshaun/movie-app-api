@@ -4,30 +4,25 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
-import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config/dist';
 import { v4 as uuidv4 } from 'uuid';
+import { MailService } from 'src/mail/mail.service';
+import {
+  createVerificationMailOption,
+  createPasswordResetMailOption,
+} from 'src/mail/mail-options';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
 
   // User verification email
   async sendVerificationEmail(email: string) {
-    // Create a nodemailer transporter
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: {
-        user: this.configService.get('ETHEREAL_USER'), // Read env
-        pass: this.configService.get('ETHEREAL_PASS'),
-      },
-    });
-
     // Generate verification token
     const verificationToken = this.generateRandomToken();
 
@@ -37,17 +32,14 @@ export class UsersService {
     await this.userRepository.save(user);
 
     // Compose email
-    const mailOptions = {
-      from: this.configService.get('ETHEREAL_USER'),
-      to: email,
-      subject: 'Email Verification Token',
-      text: `Please click the following link to verify your email: ${this.configService.get(
-        'DOMAIN',
-      )}/users/verify?token=${verificationToken}`,
-    };
+    const mailOptions = createVerificationMailOption(
+      this.configService,
+      email,
+      verificationToken,
+    );
 
     // Send email
-    const info = await transporter.sendMail(mailOptions);
+    const info = await this.mailService.sendMail(mailOptions);
     console.log(info);
   }
 
@@ -57,25 +49,9 @@ export class UsersService {
     user.resetTokenExpiry = this.calculateTokenExpiry();
     await this.userRepository.save(user);
 
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: {
-        user: this.configService.get('ETHEREAL_USER'), // Read env
-        pass: this.configService.get('ETHEREAL_PASS'),
-      },
-    });
+    const mailOptions = createPasswordResetMailOption(this.configService, user.email, resetToken);
 
-    const mailOptions = {
-      from: this.configService.get('ETHEREAL_USER'),
-      to: user.email,
-      subject: 'Password Reset',
-      text: `Please click the following link to reset your password: ${this.configService.get(
-        'DOMAIN',
-      )}/users/reset-password?token=${resetToken}`,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
+    const info = await this.mailService.sendMail(mailOptions);
     console.log(info);
     return { success: true, message: '{Password reset email sent' };
   }

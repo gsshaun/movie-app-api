@@ -5,23 +5,28 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ name: 'email', type: 'varchar', length: 255 })
   @Index({ unique: true })
   email: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ name: 'password', type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'is_email_verified', type: 'boolean', default: false })
   isEmailVerified: boolean;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({
+    name: 'verification_token',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   verificationToken: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'reset_token', type: 'varchar', length: 255, nullable: true })
   resetToken: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'reset_token_expiry', type: 'timestamp', nullable: true })
   resetTokenExpiry: Date;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
