@@ -7,6 +7,7 @@ import {
   Query,
   NotFoundException,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
@@ -42,6 +43,13 @@ export class UsersController {
 
   @Post('signup')
   async signUp(@Body() createUserDto: CreateUserDto) {
+    const existingUser = await this.usersService.findByEmail(
+      createUserDto.email,
+    );
+    if (existingUser) {
+      throw new ConflictException('User already exists.');
+    }
+
     const newUser = await this.usersService.signup(createUserDto);
     await this.usersService.sendVerificationEmail(newUser.email);
     return newUser;
