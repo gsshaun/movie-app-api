@@ -55,7 +55,7 @@ export class UsersController {
     return newUser;
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(AuthGuard('jwt'))
   @Post('signin')
   async signIn(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.findByEmail(createUserDto.email);
