@@ -6,5 +6,5 @@ export class CreateMovieDto {
   public type: string;
   public director: string;
   public plot: string;
-  public actors: string[];
+  public actors: string;
 }

@@ -26,8 +26,8 @@ export class Movie {
   @Column({ name: 'plot', type: 'varchar', length: 255, nullable: true })
   plot: string;
 
-  @Column({ name: 'actors', type: 'varchar', length: 255, nullable: true })
-  actors: string[];
+  @Column({ name: 'actors', type: 'text', nullable: true })
+  actors: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

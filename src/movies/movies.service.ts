@@ -13,7 +13,9 @@ export class MoviesService {
   ) {}
 
   async createMovie(createMovieDto: CreateMovieDto) {
-    const newMovie = this.movieRepository.create(createMovieDto);
+    const { actors, ...movie } = createMovieDto;
+    const newMovie = this.movieRepository.create(movie);
+    newMovie.actors = actors.toString();
     return await this.movieRepository.save(newMovie);
   }
 
