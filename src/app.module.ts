@@ -18,7 +18,7 @@ import { FavoritesModule } from './favorites/favorites.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         type: 'mysql',
-        host: configService.get<string>('DB_HOST', 'localhost'),
+        host: configService.get<string>('DB_HOST', 'host.docker.internal'),
         port: configService.get<number>('DB_PORT', 3306),
         username: configService.get<string>('DB_USER', 'root'),
         password: configService.get<string>('DB_PASSWORD', ''),
