@@ -1,4 +1,11 @@
-import { Entity, Column, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Favorite } from 'src/favorites/entities/favorite.entity';
+import {
+  Entity,
+  Column,
+  Index,
+  PrimaryGeneratedColumn,
+  OneToMany,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -28,6 +35,9 @@ export class User {
 
   @Column({ name: 'reset_token_expiry', type: 'timestamp', nullable: true })
   resetTokenExpiry: Date;
+
+  @OneToMany(() => Favorite, (favorite) => favorite.user)
+  favorites: Favorite[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

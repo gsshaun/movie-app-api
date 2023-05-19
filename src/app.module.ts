@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule } from '@nestjs/config';
 import { MoviesModule } from './movies/movies.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MoviesModule } from './movies/movies.module';
     PassportModule,
     UsersModule,
     MoviesModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

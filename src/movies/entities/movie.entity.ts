@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Favorite } from 'src/favorites/entities/favorite.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 @Entity()
 export class Movie {
@@ -14,7 +15,7 @@ export class Movie {
   @Column({ name: 'poster', type: 'varchar', length: 255, nullable: true })
   poster: string;
 
-  @Column({ name: 'year'})
+  @Column({ name: 'year' })
   year: number;
 
   @Column({ name: 'type', type: 'varchar', length: 20, nullable: true })
@@ -28,6 +29,9 @@ export class Movie {
 
   @Column({ name: 'actors', type: 'text', nullable: true })
   actors: string;
+
+  @OneToMany(() => Favorite, (favorite) => favorite.movie)
+  favorites: Favorite[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
