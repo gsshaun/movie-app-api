@@ -3,25 +3,19 @@ import {
   Post,
   Get,
   Body,
-  UseGuards,
   Query,
   NotFoundException,
-  UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { JwtService } from '@nestjs/jwt';
+import { SignInDto } from './dto/sign-in.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('verify')
   async verifyEmail(@Query('token') token: string) {
@@ -32,7 +26,7 @@ export class UsersController {
     }
 
     if (user.isEmailVerified) {
-      throw new UnauthorizedException('Email already verified');
+      throw new ConflictException('Email already verified');
     }
 
     user.isEmailVerified = true;
@@ -55,12 +49,9 @@ export class UsersController {
     return newUser;
   }
 
-  @UseGuards(AuthGuard('local'))
   @Post('signin')
-  async signIn(@Body() createUserDto: CreateUserDto) {
-    const user = await this.usersService.findByEmail(createUserDto.email);
-    const token = this.jwtService.sign({ email: user.email });
-
+  async signIn(@Body() signInDto: SignInDto) {
+    const token = await this.usersService.signIn(signInDto);
     return { token };
   }
 
