@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
+import { SignInDto } from './dto/sign-in.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config/dist';
+import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from 'src/mail/mail.service';
 import {
@@ -15,6 +21,7 @@ import {
 @Injectable()
 export class UsersService {
   constructor(
+    private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
     @InjectRepository(User)
@@ -49,7 +56,11 @@ export class UsersService {
     user.resetTokenExpiry = this.calculateTokenExpiry();
     await this.userRepository.save(user);
 
-    const mailOptions = createPasswordResetMailOption(this.configService, user.email, resetToken);
+    const mailOptions = createPasswordResetMailOption(
+      this.configService,
+      user.email,
+      resetToken,
+    );
 
     const info = await this.mailService.sendMail(mailOptions);
     console.log(info);
@@ -93,6 +104,28 @@ export class UsersService {
     });
 
     return await this.userRepository.save(newUser);
+  }
+
+  async signIn(signInDto: SignInDto) {
+    const { email, password } = signInDto;
+    const user = await this.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordValid = await this.comparePasswords(
+      password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const token = this.jwtService.sign({ email: user.email });
+
+    return token;
   }
 
   async findByEmail(email: string) {
