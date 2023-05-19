@@ -1,40 +1,36 @@
-import { Strategy } from 'passport-local';
+import { Strategy, ExtractJwt } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class AuthStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {
-    super({ usernameField: 'email' });
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.get('JWT_SECRET'),
+    });
   }
 
-  async validate(email: string, password: string): Promise<any> {
+  async validate(payload: any): Promise<any> {
+    const { email } = payload;
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid email');
     }
 
-    if(!user.isEmailVerified) {
+    if (!user.isEmailVerified) {
       throw new UnauthorizedException('Email not verified');
     }
 
-    const isPasswordValid = await this.usersService.comparePasswords(
-      password,
-      user.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid password');
-    }
-
-    const token = this.jwtService.sign({ email: user.email });
-
-    return { user, token };
+    return user;
   }
 }
