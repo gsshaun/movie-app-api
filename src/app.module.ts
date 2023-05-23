@@ -7,6 +7,8 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MoviesModule } from './movies/movies.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -28,12 +30,22 @@ import { FavoritesModule } from './favorites/favorites.module';
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot({
+      ttl: 10,
+      limit: 1000,
+    }),
     PassportModule,
     UsersModule,
     MoviesModule,
     FavoritesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

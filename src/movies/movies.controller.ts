@@ -1,7 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('movies')
 export class MoviesController {
@@ -12,6 +21,7 @@ export class MoviesController {
     return await this.moviesService.createMovie(createMovieDto);
   }
 
+  @Throttle(10, 300)
   @Get()
   async findAllMovies() {
     return await this.moviesService.findAllMovies();
@@ -23,10 +33,14 @@ export class MoviesController {
   }
 
   @Patch(':id')
-  async updateMovie(@Param('id') id: number, @Body() updateMovieDto: UpdateMovieDto) {
+  async updateMovie(
+    @Param('id') id: number,
+    @Body() updateMovieDto: UpdateMovieDto,
+  ) {
     return await this.moviesService.updateMovie(+id, updateMovieDto);
   }
 
+  @SkipThrottle()
   @Delete(':id')
   async removeMovie(@Param('id') id: string) {
     return await this.moviesService.removeMovie(+id);
