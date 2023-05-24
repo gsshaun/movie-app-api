@@ -44,13 +44,13 @@ export class FavoritesController {
   }
 
   @Delete(':movieId')
-  async removeMovieFromFavorite(
+  async removeMovieFromFavorites(
     @Request() req: any,
     @Param('movieId') movieId: number,
   ) {
     const user: User = req.user;
     const movie: Movie = await this.moviesService.getMovieById(movieId);
-    await this.favoritesService.removeFromFavorite(user, movie);
+    await this.favoritesService.removeFromFavorites(user, movie);
     return { success: true, message: 'Movie removed successfully' };
   }
 }

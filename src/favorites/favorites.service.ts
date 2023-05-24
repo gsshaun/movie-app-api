@@ -35,7 +35,7 @@ export class FavoritesService {
     });
   }
 
-  async removeFromFavorite(user: User, movie: Movie) {
+  async removeFromFavorites(user: User, movie: Movie) {
     const favorite = await this.favoriteRepository.findOne({
       where: { user, movie },
     });
