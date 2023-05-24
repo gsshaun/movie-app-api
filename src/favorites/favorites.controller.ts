@@ -8,9 +8,9 @@ import {
   Delete,
   Request,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
-import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { User } from 'src/users/entities/user.entity';
 import { Movie } from 'src/movies/entities/movie.entity';
 import { MoviesService } from 'src/movies/movies.service';
@@ -29,7 +29,18 @@ export class FavoritesController {
     const user: User = req.user;
     const movie: Movie = await this.moviesService.getMovieById(movieId);
     const createFavoriteDto = { user, movie };
-    return this.favoritesService.addToFavorite(createFavoriteDto);
+    return await this.favoritesService.addToFavorite(createFavoriteDto);
+  }
+
+  @Get()
+  async getFavoritesList(@Request() req: any) {
+    const user: User = req.user;
+    const favorites = await this.favoritesService.getFavoriteList(user);
+    if (favorites.length === 0) {
+      throw new NotFoundException('No favorites found');
+    }
+
+    return favorites;
   }
 
   @Delete(':movieId')
