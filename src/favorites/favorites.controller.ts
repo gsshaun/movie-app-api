@@ -15,6 +15,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Movie } from 'src/movies/entities/movie.entity';
 import { MoviesService } from 'src/movies/movies.service';
 import { AuthGuard } from '@nestjs/passport';
+import { Favorite } from './entities/favorite.entity';
 
 @Controller('favorites')
 @UseGuards(AuthGuard('jwt'))
@@ -41,6 +42,14 @@ export class FavoritesController {
     }
 
     return favorites;
+  }
+
+  @Delete()
+  async removeAllFavorites(@Request() req: any) {
+    const favorites: Favorite[] = await this.getFavoritesList(req);
+    await this.favoritesService.removeAllFromFavoriteList(favorites);
+
+    return { success: true, message: 'Favorites removed' };
   }
 
   @Delete(':movieId')
